@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -9,116 +10,123 @@ void ValidateSolution();
 bool PlayAgain();
 
 // Global Variables
-const int COL = 9, ROW = 9;
-int board[ROW][COL];
+const int SIZE = 9; // Changed to a single constant for better clarity
+vector<vector<int>> board(SIZE, vector<int>(SIZE, 0)); // Initialize a 9x9 board with zeros
 
 int main()
 {
-
     do
     {
         GenerateBoard();
         PlayBoard();
         ValidateSolution();
-    } while (PlayAgain() == true);
+    } while (PlayAgain());
 }
 
 void GenerateBoard()
 {
-    for (int i = 0; i < ROW; i++)
+    cout << "Current Board:" << endl;
+    for (int i = 0; i < SIZE; i++)
     {
-        for (int j = 0; j < COL; j++)
+        for (int j = 0; j < SIZE; j++)
         {
-            cout << board[i][j];
+            cout << board[i][j] << " ";
         }
-    };
+        cout << endl;
+    }
 }
 
 void PlayBoard()
 {
-    int row, col, value, filled = 0;
-    int fullyFilled = 81;
-    bool invalid, full;
+    int value;
+    bool full = false;
 
     do
     {
-        cout << "What are the coordinates for the box you want to add a value in?" << endl;
-        cout << "Row: ";
-        cin >> row;
-        cout << "Col: ";
-        cin >> col;
+        int cell;
+        cout << "Enter the cell number (1-81) to add a value (or 0 to finish): ";
+        cin >> cell;
 
-        if (row < 1 || row > 9 || col < 1 || col > 9)
+        if (cell == 0) break; // Allow player to finish inputting
+
+        // Convert cell number (1-81) to row and column
+        int row = (cell - 1) / SIZE; // Row index
+        int col = (cell - 1) % SIZE; // Column index
+
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE || board[row][col] != 0)
         {
-            cout << "That is an invalid option. Please select a value between 1-9" << endl;
-            invalid = true;
-            while (invalid == true)
-            {
-                cout << "What are the coordinates for the box you want to add a value in?" << endl;
-                cout << "Row: ";
-                cin >> row;
-                cout << "Col: ";
-                cin >> col;
-            }
-            cout << "What is the value you want to put in this box? ";
-            cout << "Value: ";
-            cin >> value;
+            cout << "Invalid move. Please select an empty cell between 1-81." << endl;
+            continue; // Prompt for input again
+        }
 
-            board[row][col] = value;
+        cout << "What value do you want to put in cell " << cell << "? ";
+        cin >> value;
 
-            for (int i = 0; i < ROW; i++)
+        board[row][col] = value; // Place the value in the selected cell
+
+        // Check if the board is full
+        full = true; // Assume the board is full
+        for (int i = 0; i < SIZE; i++)
+        {
+            for (int j = 0; j < SIZE; j++)
             {
-                for (int j = 0; j < COL; j++)
+                if (board[i][j] == 0) // If any cell is still zero
                 {
-                    cout << board[i][j];
-                    if (board[i][j] > 0)
-                    {
-                        filled++;
-                    }
+                    full = false; // The board is not full
+                    break;
                 }
             }
-
-            if (filled == fullyFilled)
-            {
-                full = true;
-                ValidateSolution();
-            }
+            if (!full) break;
         }
-    } while (full == false);
+
+    } while (!full);
 }
 
 void ValidateSolution()
 {
-    int correctSum = 405, correctCol = 45, correctRow = 45;
-    int row[ROW], col[COL], sum;
-    bool sol = false;
+    int correctSum = 405; // Sum of numbers 1-9 is 45, for a 9x9 grid it should be 405
+    bool isValid = true;
 
-    for (int i = 0; i < ROW; i++)
+    // Validate rows
+    for (int i = 0; i < SIZE; i++)
     {
-        row[i] += board[i, 0];
-        col[i] += board[0, i];
-        for (int j = 0; j < COL; j++)
+        int sum = 0;
+        for (int j = 0; j < SIZE; j++)
         {
-            sum += board[i, i];
+            sum += board[i][j];
+        }
+        if (sum != 45) // Each row must sum to 45
+        {
+            isValid = false;
+            break;
         }
     }
 
-    for (int c = 0; 0 < ROW; c++)
+    // Validate columns
+    if (isValid)
     {
-        if (row[c] == correctRow && col[c] == correctCol)
+        for (int j = 0; j < SIZE; j++)
         {
-            cout << "Solution is correct" << endl;
-            sol = true;
+            int sum = 0;
+            for (int i = 0; i < SIZE; i++)
+            {
+                sum += board[i][j];
+            }
+            if (sum != 45) // Each column must sum to 45
+            {
+                isValid = false;
+                break;
+            }
         }
     }
 
-    if (sol == true && sum == correctSum)
+    if (isValid)
     {
-        cout << "Solution is correct" << endl;
+        cout << "Solution is correct!" << endl;
     }
     else
     {
-        cout << "Something is wrong with the solution" << endl;
+        cout << "Something is wrong with the solution." << endl;
     }
 }
 
@@ -126,18 +134,10 @@ bool PlayAgain()
 {
     char playMore;
 
-    cout << "Would you like to play again? Enter y or Y for yes and n or N for no" << endl;
+    cout << "Would you like to play again? Enter y or Y for yes and n or N for no: ";
     cin >> playMore;
 
-    if (playMore == 'y' || playMore == 'Y')
-    {
-        return true;
-    }
-    else if (playMore == 'n' || playMore == 'N')
-    {
-        cout << "Thanks for Playing!" << endl;
-        return false;
-    }
+    return playMore == 'y' || playMore == 'Y'; // Simplified return
 }
 
 
